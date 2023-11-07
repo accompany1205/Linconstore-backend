@@ -10,8 +10,7 @@ config on the root directory. move dev.env to the config directory
 
 ## Documentation
 ```bash
-Open [https://documenter.getpostman.com/view/13129148/2s93z6c3zW]
-(https://documenter.getpostman.com/view/13129148/2s93z6c3zW) with your browser to see.
+incoming 
 ```
 ## Install dependencies
 
@@ -32,3 +31,21 @@ npm run dev
 # or
 yarn dev
 ```                     
+
+```text
+test environment live kit.
+live url https://lincon.store
+
+test accounts 
+
+
+mongodb login
+linconstore@proton.me
+qazmlp123
+
+cloudinary 
+linconstore@proton.me
+Qazmlp123$
+
+
+```
