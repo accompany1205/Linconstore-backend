@@ -36,7 +36,7 @@ const emailTemplate = `
         <table cellpadding="0" cellspacing="0" border="0" width="100%" >
             <tr>
                 <td align="center" style="padding: 20px 0;">
-                    <img src="https://res.cloudinary.com/linconstore-cloud/image/upload/f_auto,q_auto/v1/web-asset/xl9arigvyokwmrj9wlyb" alt="Logo" style="display: block; width: 80px; height: 80px;">
+                    <img src="https://res.cloudinary.com/linconstore-test/image/upload/f_auto,q_auto/v1/web-asset_2023-11-07_17_35/foezgis9u2avsc1ojjkq" alt="Logo" style="display: block; width: 80px; height: 80px;">
                 </td>
             </tr>
             <tr>
@@ -95,7 +95,7 @@ export const verifyEmail = async (phone_no: string, email: string, otp: number) 
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" >
                     <tr>
                         <td align="center" style="padding: 20px 0;">
-                            <img src="https://res.cloudinary.com/linconstore-cloud/image/upload/f_auto,q_auto/v1/web-asset/xl9arigvyokwmrj9wlyb" alt="Logo" style="display: block; width: 80px; height: 80px;">
+                            <img src="https://res.cloudinary.com/linconstore-test/image/upload/f_auto,q_auto/v1/web-asset_2023-11-07_17_35/foezgis9u2avsc1ojjkq" alt="Logo" style="display: block; width: 80px; height: 80px;">
                         </td>
                     </tr>
                     <tr>
@@ -164,7 +164,7 @@ export const verifyAdmin = async (otp: number, email: string) => {
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" >
                     <tr>
                         <td align="center" style="padding: 20px 0;">
-                            <img src="https://res.cloudinary.com/linconstore-cloud/image/upload/f_auto,q_auto/v1/web-asset/xl9arigvyokwmrj9wlyb" alt="Logo" style="display: block; width: 80px; height: 80px;">
+                            <img src="https://res.cloudinary.com/linconstore-test/image/upload/f_auto,q_auto/v1/web-asset_2023-11-07_17_35/foezgis9u2avsc1ojjkq" alt="Logo" style="display: block; width: 80px; height: 80px;">
                         </td>
                     </tr>
                     <tr>
@@ -234,7 +234,7 @@ export const forgotPassword = async (otp: string, id: mongoose.Types.ObjectId, e
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" >
                     <tr>
                         <td align="center" style="padding: 20px 0;">
-                            <img src="https://res.cloudinary.com/linconstore-cloud/image/upload/f_auto,q_auto/v1/web-asset/xl9arigvyokwmrj9wlyb" alt="Logo" style="display: block; width: 80px; height: 80px;">
+                            <img src="https://res.cloudinary.com/linconstore-test/image/upload/f_auto,q_auto/v1/web-asset_2023-11-07_17_35/foezgis9u2avsc1ojjkq" alt="Logo" style="display: block; width: 80px; height: 80px;">
                         </td>
                     </tr>
                     <tr>
@@ -310,7 +310,7 @@ export const welcomeSellers = async (phone: string, email: string, type: string)
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" >
                     <tr>
                         <td align="center" style="padding: 20px 0;">
-                            <img src="https://res.cloudinary.com/linconstore-cloud/image/upload/f_auto,q_auto/v1/web-asset/xl9arigvyokwmrj9wlyb" alt="Logo" style="display: block; width: 80px; height: 80px;">
+                            <img src="https://res.cloudinary.com/linconstore-test/image/upload/f_auto,q_auto/v1/web-asset_2023-11-07_17_35/foezgis9u2avsc1ojjkq" alt="Logo" style="display: block; width: 80px; height: 80px;">
                         </td>
                     </tr>
                     <tr>
@@ -416,7 +416,7 @@ export const closeAccount = async (email: string) => {
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" >
                     <tr>
                         <td align="center" style="padding: 20px 0;">
-                            <img src="https://res.cloudinary.com/linconstore-cloud/image/upload/f_auto,q_auto/v1/web-asset/xl9arigvyokwmrj9wlyb" alt="Logo" style="display: block; width: 80px; height: 80px;">
+                            <img src="https://res.cloudinary.com/linconstore-test/image/upload/f_auto,q_auto/v1/web-asset_2023-11-07_17_35/foezgis9u2avsc1ojjkq" alt="Logo" style="display: block; width: 80px; height: 80px;">
                         </td>
                     </tr>
                     <tr>
