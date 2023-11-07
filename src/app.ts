@@ -49,7 +49,7 @@ client.flush();
 
 // Set up CORS middleware for multiple origins
 app.use(cors({
-  origin: ["https://linconstore.com", "https://linconstore.cloud"],
+  origin: ["https://lincon.store", "https://admin.lincon.store"],
 }));
 const server = http.createServer(app);
 dbconnect;
@@ -155,17 +155,17 @@ treblle.useTreblle(app, {
 
 // Create a proxy middleware
 const proxyMiddlewareUser = createProxyMiddleware({
-  target: 'https://linconstore.com', 
+  target: 'https://lincon.store', 
   changeOrigin: true, 
 });
 
 const proxyMiddlewareAdmin = createProxyMiddleware({
-  target: 'https://linconstore.cloud/', 
+  target: 'https://admin.lincon.store', 
   changeOrigin: true, 
 });
 
 const proxyMiddlewareServer = createProxyMiddleware({
-  target: 'https://server.linconstore.com', // Replace with your target URL
+  target: 'https://api.lincon.store', // Replace with your target URL
   changeOrigin: true, // Set this to true if you want to change the origin of the request
 });
 
