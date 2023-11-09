@@ -164,15 +164,9 @@ const proxyMiddlewareAdmin = createProxyMiddleware({
   changeOrigin: true, 
 });
 
-const proxyMiddlewareServer = createProxyMiddleware({
-  target: 'https://api.lincon.store', // Replace with your target URL
-  changeOrigin: true, // Set this to true if you want to change the origin of the request
-});
-
 // Add the proxy middleware to your Express app
 app.use('/', proxyMiddlewareUser); 
 app.use('/', proxyMiddlewareAdmin);
-app.use('/', proxyMiddlewareServer);
 
 server.listen(port, () => {
   console.log("running on port " + " " + port);
