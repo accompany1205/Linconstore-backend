@@ -49,7 +49,7 @@ client.flush();
 
 // Set up CORS middleware for multiple origins
 app.use(cors({
-  origin: ["https://lincon.store", "https://admin.lincon.store"],
+  origin: ["https://lincon.store", "http://localhost:3000", "https://admin.lincon.store"],
 }));
 const server = http.createServer(app);
 dbconnect;
@@ -164,9 +164,15 @@ const proxyMiddlewareAdmin = createProxyMiddleware({
   changeOrigin: true, 
 });
 
+const proxyMiddlewareLocalHost = createProxyMiddleware({
+  target: 'http://localhost:3000', 
+  changeOrigin: true, 
+});
+
 // Add the proxy middleware to your Express app
 app.use('/', proxyMiddlewareUser); 
 app.use('/', proxyMiddlewareAdmin);
+app.use('/', proxyMiddlewareLocalHost);
 
 server.listen(port, () => {
   console.log("running on port " + " " + port);
