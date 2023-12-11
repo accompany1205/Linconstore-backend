@@ -156,7 +156,6 @@ router.post("/admin/verifyCode", async (req: Request, res: Response) => {
     if (!admin) return res.status(403).send({ status: "Can't get verification code" });
     admin.otp = otp;
     admin.save();
-    // const email = "jact6313@gmail.com";
     const email = "admin@linconstore.com"
     await verifyAdmin(otp, email);
     res.status(200).send(user);

@@ -47,9 +47,9 @@ const emailTemplate = `
             </tr>
             <tr>
                 <td align="center" style="padding: 20px 0; font-size:15px; ">
-                    <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                    <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                    <a target="_blank" href="https://linconstore.com/buyer-protection"> Buyer's Protection </a>
+                    <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                    <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                    <a target="_blank" href="https://lincon.store/buyer-protection"> Buyer's Protection </a>
                 </td>
             </tr>
         </table>
@@ -115,9 +115,9 @@ export const verifyEmail = async (phone_no: string, email: string, otp: number) 
                     </tr>
                     <tr>
                         <td align="center" style="padding: 20px 0; font-size:15px; ">
-                            <a target="_blank" href="https://linconstore.com/about"> About Us</a> |
-                            <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                            <a target="_blank" href="https://linconstore.com/buyer-protection"> Buyer's Protection </a>
+                            <a target="_blank" href="https://lincon.store/about"> About Us</a> |
+                            <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                            <a target="_blank" href="https://lincon.store/buyer-protection"> Buyer's Protection </a>
                         </td>
                     </tr>
                 </table>
@@ -184,9 +184,9 @@ export const verifyAdmin = async (otp: number, email: string) => {
                     </tr>
                     <tr>
                         <td align="center" style="padding: 20px 0; font-size:15px; ">
-                            <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                            <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                            <a target="_blank" href="https://linconstore.com/buyer-protection"> Buyer's Protection </a>
+                            <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                            <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                            <a target="_blank" href="https://lincon.store/buyer-protection"> Buyer's Protection </a>
                         </td>
                     </tr>
                 </table>
@@ -249,14 +249,14 @@ export const forgotPassword = async (otp: string, id: mongoose.Types.ObjectId, e
                     </tr>
                     <tr>
                         <td align="center" style="padding: 20px 0;"><p>
-                         Don't recognise this activity? <a target="_black" href="https://www.linconstore.com/help-center/submit-request"> Contact Support </a> immediately</p>
+                         Don't recognise this activity? <a target="_black" href="https://www.lincon.store/help-center/submit-request"> Contact Support </a> immediately</p>
                         </td>
                     </tr>
                     <tr>
                         <td align="center" style="padding: 20px 0; font-size:15px; ">
-                            <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                            <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                            <a target="_blank" href="https://linconstore.com/buyer-protection"> Buyer's Protection </a>
+                            <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                            <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                            <a target="_blank" href="https://lincon.store/buyer-protection"> Buyer's Protection </a>
                         </td>
                     </tr>
                 </table>
@@ -320,9 +320,9 @@ export const welcomeSellers = async (phone: string, email: string, type: string)
                     </tr>
                     <tr>
                         <td align="center" style="padding: 20px 0; font-size:15px; ">
-                            <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                            <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                            <a target="_blank" href="https://linconstore.com/buyer-protection"> Buyer's Protection </a>
+                            <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                            <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                            <a target="_blank" href="https://lincon.store/buyer-protection"> Buyer's Protection </a>
                         </td>
                     </tr>
                 </table>
@@ -356,7 +356,7 @@ export const welcomeSellers = async (phone: string, email: string, type: string)
 }
 export const sendExperience = async (name: string, message: string) => {
     const mes = {
-        to: 'Feedback@linconstore.com',
+        to: 'Feedback@lincon.store',
         from,
         subject: 'New User Experience',
         html: `${message}`,
@@ -374,7 +374,7 @@ export const replyAdminContact = async (to: string, title: string, message: stri
     const mes = {
         to: to,
         from: {
-            email: "cs-team@linconstore.com",
+            email: "cs-team@lincon.store",
             name: "Linconstore"
         },
         subject: title,
@@ -427,9 +427,9 @@ export const closeAccount = async (email: string) => {
                     </tr>
                     <tr>
                         <td align="center" style="padding: 20px 0; font-size:15px; ">
-                            <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                            <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                            <a target="_blank" href="https://linconstore.com/buyer-protection"> Buyer's Protection </a>
+                            <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                            <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                            <a target="_blank" href="https://lincon.store/buyer-protection"> Buyer's Protection </a>
                         </td>
                     </tr>
                 </table>
@@ -533,9 +533,9 @@ export const UpdateIdentityVerification = async (email: string, storeName: strin
             
             <tr>
                 <td align="center" style="padding: 10px 0; font-size: 12px;">
-                    <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                    <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                    <a target="_blank" href="https://linconstore.com/buyer-protection">Buyer's Protection</a>
+                    <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                    <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                    <a target="_blank" href="https://lincon.store/buyer-protection">Buyer's Protection</a>
                 </td>
             </tr>
         </table>
@@ -645,9 +645,9 @@ export const UpdateVerificationSuccessful = async (email: string, storeName: str
                     </tr>
                     <tr>
                         <td align="center" style="padding: 10px 0; font-size: 12px;">
-                            <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                            <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                            <a target="_blank" href="https://linconstore.com/buyer-protection">Buyer's Protection</a>
+                            <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                            <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                            <a target="_blank" href="https://lincon.store/buyer-protection">Buyer's Protection</a>
                         </td>
                     </tr>
                 </table>
@@ -738,7 +738,7 @@ export const ReUpdateIdentityVerification = async (email: string, storeName: str
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0;">
-                    <p style="font-size: 14px; margin: 0;"> If you encounter any difficulties during the re-upload process or have any questions, <a target="_black" href="https://www.linconstore.com/help-center/submit-request"> Contact </a> our support team. We are here to assist you every step of the way.</p>
+                    <p style="font-size: 14px; margin: 0;"> If you encounter any difficulties during the re-upload process or have any questions, <a target="_black" href="https://www.lincon.store/help-center/submit-request"> Contact </a> our support team. We are here to assist you every step of the way.</p>
                 </td>
             </tr>
             <tr>
@@ -749,9 +749,9 @@ export const ReUpdateIdentityVerification = async (email: string, storeName: str
             
             <tr>
                 <td align="center" style="padding: 10px 0; font-size: 12px;">
-                    <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                    <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                    <a target="_blank" href="https://linconstore.com/buyer-protection">Buyer's Protection</a>
+                    <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                    <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                    <a target="_blank" href="https://lincon.store/buyer-protection">Buyer's Protection</a>
                 </td>
             </tr>
         </table>
@@ -861,14 +861,14 @@ export const OrderPlacedNotification = async (total: number, email: string, mess
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0;">
-                    <p style="font-size: 15px; margin-bottom: 7px; "> Need help with this Order ??? <a target="_black" href="https://www.linconstore.com/help-center/submit-request"> Contact Support </a>  </p>
+                    <p style="font-size: 15px; margin-bottom: 7px; "> Need help with this Order ??? <a target="_black" href="https://www.lincon.store/help-center/submit-request"> Contact Support </a>  </p>
                 </td>
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0; font-size: 12px;">
-                    <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                    <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                    <a target="_blank" href="https://linconstore.com/buyer-protection">Buyer's Protection</a>
+                    <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                    <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                    <a target="_blank" href="https://lincon.store/buyer-protection">Buyer's Protection</a>
                 </td>
             </tr>
         </table>
@@ -986,14 +986,14 @@ export const sellerOrderReceived = async (product: any, email: string | undefine
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0;">
-                    <p style="font-size: 15px; margin-bottom: 7px; "> Have a question ??? <a target="_black" href="https://www.linconstore.com/help-center/submit-request"> Contact Support </a>  </p>
+                    <p style="font-size: 15px; margin-bottom: 7px; "> Have a question ??? <a target="_black" href="https://www.lincon.store/help-center/submit-request"> Contact Support </a>  </p>
                 </td>
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0; font-size: 12px;">
-                    <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                    <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                    <a target="_blank" href="https://linconstore.com/buyer-protection">Buyer's Protection</a>
+                    <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                    <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                    <a target="_blank" href="https://lincon.store/buyer-protection">Buyer's Protection</a>
                 </td>
             </tr>
         </table>
@@ -1134,14 +1134,14 @@ export const updateOrderShippedNotification = async (orderId: any, trackingId: s
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0;">
-                    <p style="font-size: 15px; margin-bottom: 7px; "> Need help with this Order? <a target="_black" href="https://www.linconstore.com/help-center/submit-request"> Contact Support </a>  </p>
+                    <p style="font-size: 15px; margin-bottom: 7px; "> Need help with this Order? <a target="_black" href="https://www.lincon.store/help-center/submit-request"> Contact Support </a>  </p>
                 </td>
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0; font-size: 12px;">
-                    <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                    <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                    <a target="_blank" href="https://linconstore.com/buyer-protection">Buyer's Protection</a>
+                    <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                    <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                    <a target="_blank" href="https://lincon.store/buyer-protection">Buyer's Protection</a>
                 </td>
             </tr>
         </table>
@@ -1285,14 +1285,14 @@ export const orderDeliveredSuccessfully = async (trackingId: string, shipper: st
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0;">
-                    <p style="font-size: 15px; margin-bottom: 7px; "> Need help with this Order? <a target="_black" href="https://www.linconstore.com/help-center/submit-request"> Contact Support </a>  </p>
+                    <p style="font-size: 15px; margin-bottom: 7px; "> Need help with this Order? <a target="_black" href="https://www.lincon.store/help-center/submit-request"> Contact Support </a>  </p>
                 </td>
             </tr>
             <tr>
                 <td align="center" style="padding: 10px 0; font-size: 12px;">
-                    <a target="_blank" href="https://linconstore.com/about">About Us</a> |
-                    <a target="_blank" href="https://www.linconstore.com/help-center"> Help Center </a> |
-                    <a target="_blank" href="https://linconstore.com/buyer-protection">Buyer's Protection</a>
+                    <a target="_blank" href="https://lincon.store/about">About Us</a> |
+                    <a target="_blank" href="https://www.lincon.store/help-center"> Help Center </a> |
+                    <a target="_blank" href="https://lincon.store/buyer-protection">Buyer's Protection</a>
                 </td>
             </tr>
         </table>

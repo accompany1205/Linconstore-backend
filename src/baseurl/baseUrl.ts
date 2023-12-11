@@ -1,5 +1,5 @@
 const developUrl: string = "http://localhost:3000";
-const productionUrl: string = "https://linconstore.com/";
+const productionUrl: string = "https://lincon.store/";
 const baseUrl: string = productionUrl;
 
 export const uploadLink = `${baseUrl}/seller/additional_verification`;
