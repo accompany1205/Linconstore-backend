@@ -426,7 +426,6 @@ router.post("/cart", auth, async (req: Request, res: Response) => {
     await newCart.save();
     res.status(201).send(newCart);
   } catch (e) {
-    console.log(e);
     res.status(500).send(e);
   }
 });
