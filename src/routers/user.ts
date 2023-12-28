@@ -152,19 +152,18 @@ router.get("/users/fetch/:id", async (req: Request, res: Response) => {
     const id = req.params.id;
     const users = await User.findByIdAndDelete(id);
     res.status(200).send(users);
-  } catch (e) { }
+  } catch (e) {}
 });
 
-router.post('/user/security', auth, async (req: Request, res: Response) => {
+router.post("/user/security", auth, async (req: Request, res: Response) => {
   const { newPassword, oldPassword } = req.body;
   try {
     const user = await User.findByCredentials(req.user.email, oldPassword);
     user.password = newPassword;
     await user.save();
-    res.status(200).send('ok')
-  }
-  catch (e) {
-    res.status(500).send(e)
+    res.status(200).send("ok");
+  } catch (e) {
+    res.status(500).send(e);
   }
 });
 
@@ -174,13 +173,20 @@ router.post("/user/login", async (req: Request, res: Response) => {
     const user: Iuser = await User.findByCredentials(email, password);
     const token = await user.generateAuthToken();
     const seller: Iseller | null = await Seller.findOne({ owner: user._id });
-    if (user.isClosed) return res.status(403).send("something went wrong");
+    if (user.isClosed) return res.status(402).send("USER_DELETED");
     if (user && user.isVerified) {
-      return res.status(200).send({ user, token, seller: seller ? seller.isVerified : null });
+      return res
+        .status(200)
+        .send({ user, token, seller: seller ? seller.isVerified : null });
     }
-    res.status(400).send("Something went wrong");
-  } catch (e) {
-    res.status(400).send(e);
+    return res.status(400).send("Something went wrong");
+  } catch (e : any) {
+    if (e.message === "USER_PASSWORD_INCORRECT"){
+      return res.status(403).send("USER_PASSWORD_INCORRECT");
+    }
+    if (e.message === "USER_NOT_EXIST")
+      return res.status(403).send("USER_NOT_EXIST");
+    return res.status(400).send("STH_WENT_WRONG");
   }
 });
 
@@ -494,21 +500,25 @@ router.get("/user/order", auth, async (req: Request, res: Response) => {
       {
         path: "productId",
         model: Product,
-        populate: [{
-          path: "owner",
-          model: Store,
-          populate: {
+        populate: [
+          {
             path: "owner",
-            model: Seller,
+            model: Store,
+            populate: {
+              path: "owner",
+              model: Seller,
+            },
           },
-        }, {
-          path: "ratingId",
-          model: Rating,
-        }],
-      }, {
+          {
+            path: "ratingId",
+            model: Rating,
+          },
+        ],
+      },
+      {
         path: "address",
         model: Address,
-      }
+      },
     ]);
     res.status(200).send({ user: req.user._id, order });
   } catch (e) {
@@ -520,58 +530,72 @@ router.get("/user/order/shipped", auth, async (req: Request, res: Response) => {
   try {
     const order: IOrder[] = await Order.find({ userId: req.user._id })
       .or([{ status: "shipped" }, { status: "delivered" }])
-      .populate([{
-        path: "productId",
-        model: Product,
-        populate: [{
-          path: "owner",
-          model: Store,
-          populate: {
-            path: "owner",
-            model: Seller,
-          },
-        }, {
-          path: "ratingId",
-          model: Rating,
-        }],
-      }, {
-        path: "address",
-        model: Address,
-      }
+      .populate([
+        {
+          path: "productId",
+          model: Product,
+          populate: [
+            {
+              path: "owner",
+              model: Store,
+              populate: {
+                path: "owner",
+                model: Seller,
+              },
+            },
+            {
+              path: "ratingId",
+              model: Rating,
+            },
+          ],
+        },
+        {
+          path: "address",
+          model: Address,
+        },
       ]);
     res.status(200).send({ user: req.user._id, order });
   } catch (e) {
     res.status(500).send(e);
   }
 });
-router.get("/user/order/processed", auth, async (req: Request, res: Response) => {
-  try {
-    const order: IOrder[] = await Order.find({ userId: req.user._id })
-      .or([{ status: "processed" }, { status: "cancelled" }])
-      .populate([{
-        path: "productId",
-        model: Product,
-        populate: [{
-          path: "owner",
-          model: Store,
-          populate: {
-            path: "owner",
-            model: Seller,
+router.get(
+  "/user/order/processed",
+  auth,
+  async (req: Request, res: Response) => {
+    try {
+      const order: IOrder[] = await Order.find({ userId: req.user._id })
+        .or([{ status: "processed" }, { status: "cancelled" }])
+        .populate([
+          {
+            path: "productId",
+            model: Product,
+            populate: [
+              {
+                path: "owner",
+                model: Store,
+                populate: {
+                  path: "owner",
+                  model: Seller,
+                },
+              },
+              {
+                path: "ratingId",
+                model: Rating,
+              },
+            ],
           },
-        }, {
-          path: "ratingId",
-          model: Rating,
-        }],
-      }, {
-        path: "address",
-        model: Address,
-      }
-      ]);
-    res.status(200).send({ user: req.user._id, order });
-  } catch (e) {
-    res.status(500).send(e);
+          {
+            path: "address",
+            model: Address,
+          },
+        ]);
+      res.status(200).send({ user: req.user._id, order });
+    } catch (e) {
+      res.status(500).send(e);
+    }
   }
-});
+);
 router.get(
   "/user/order/cancelled",
   auth,
@@ -591,10 +615,11 @@ router.get(
                 model: Seller,
               },
             },
-          }, {
+          },
+          {
             path: "address",
             model: Address,
-          }
+          },
         ]);
       res.status(200).send({ user: req.user._id, order });
     } catch (e) {
@@ -738,7 +763,7 @@ router.get("/admin/messages/:id", async (req: Request, res: Response) => {
     const id = req.params.id;
     const messages = await Message.find({
       roomName: id,
-      deletedByRole: null
+      deletedByRole: null,
     }).exec();
     res.status(200).send(messages);
   } catch (e) {
@@ -759,41 +784,39 @@ router.get("/admin/broadCast", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/user/room/messages/:id", auth, async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id;
-    const { sellerId, role, buyerId } = req.query
-    let messages = []
-    if (role == 'user') {
-      messages = await Message.find({
-        $or: [
-          { from: req.user._id },
-          { to: req.user._id },
-        ],
-        roomName: id,
-        deletedByBuyerId: { $ne: buyerId }
-      }).exec();
-    } else if (role == 'seller') {
-      messages = await Message.find({
-        $or: [
-          { from: req.user._id },
-          { to: req.user._id },
-        ],
-        roomName: id,
-        deletedBySellerId: { $ne: sellerId }
-      }).exec();
-    } else {
-      messages = await Message.find({
-        type: CHAT_TYPE.ADMIN_CHAT,
-        roomName: id,
-        deletedByRole: null
-      }).exec();
+router.get(
+  "/user/room/messages/:id",
+  auth,
+  async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const { sellerId, role, buyerId } = req.query;
+      let messages = [];
+      if (role == "user") {
+        messages = await Message.find({
+          $or: [{ from: req.user._id }, { to: req.user._id }],
+          roomName: id,
+          deletedByBuyerId: { $ne: buyerId },
+        }).exec();
+      } else if (role == "seller") {
+        messages = await Message.find({
+          $or: [{ from: req.user._id }, { to: req.user._id }],
+          roomName: id,
+          deletedBySellerId: { $ne: sellerId },
+        }).exec();
+      } else {
+        messages = await Message.find({
+          type: CHAT_TYPE.ADMIN_CHAT,
+          roomName: id,
+          deletedByRole: null,
+        }).exec();
+      }
+      res.status(200).send(messages);
+    } catch (e) {
+      res.status(500).send(e);
     }
-    res.status(200).send(messages);
-  } catch (e) {
-    res.status(500).send(e);
   }
-});
+);
 router.post("/user/bill/address", auth, async (req: Request, res: Response) => {
   const address = new Address({
     ...req.body,
@@ -889,8 +912,20 @@ router.get("/user/address", auth, async (req: Request, res: Response) => {
 router.patch("/user/address/:id", auth, async (req: Request, res: Response) => {
   const updates: string[] = Object.keys(req.body);
   const { id } = req.params;
-  const allowedUpdate = ["city", "country", "firstName", "lastName", "phoneNumber", "state", "zipCode", "address", "id"];
-  const isAllowed: boolean = updates.every((update) => allowedUpdate.includes(update));
+  const allowedUpdate = [
+    "city",
+    "country",
+    "firstName",
+    "lastName",
+    "phoneNumber",
+    "state",
+    "zipCode",
+    "address",
+    "id",
+  ];
+  const isAllowed: boolean = updates.every((update) =>
+    allowedUpdate.includes(update)
+  );
   try {
     if (!isAllowed) return res.status(403).send("Invalid updates");
     const existingAddress: IAddress | null = await Address.findById(id);
@@ -960,10 +995,10 @@ router.get("/user/checkout", auth, async (req: Request, res: Response) => {
               model: Store,
               populate: [
                 {
-                  path: 'owner',
-                  model: Seller
-                }
-              ]
+                  path: "owner",
+                  model: Seller,
+                },
+              ],
             },
           ],
         },
@@ -1003,7 +1038,10 @@ router.post("/user/payment", auth, async (req: Request, res: Response) => {
       return res.status(404).send("Nothing here");
     }
 
-    const rates = (await handleRateChange()) as unknown as Record<string, number>;
+    const rates = (await handleRateChange()) as unknown as Record<
+      string,
+      number
+    >;
     const customer = req.user.customer_id;
     const productsArray: {
       price_data: {
@@ -1024,7 +1062,10 @@ router.post("/user/payment", auth, async (req: Request, res: Response) => {
           product_data: {
             name: product.name,
           },
-          unit_amount: Math.floor(Number(product.price * rates[`${owner.currency}`] / countryRate) * 100),
+          unit_amount: Math.floor(
+            Number((product.price * rates[`${owner.currency}`]) / countryRate) *
+              100
+          ),
         },
         quantity: product.quantity,
       };
@@ -1036,7 +1077,7 @@ router.post("/user/payment", auth, async (req: Request, res: Response) => {
         product_data: {
           name: "Shipping",
         },
-        unit_amount: Math.floor(shipping * 100 / countryRate),
+        unit_amount: Math.floor((shipping * 100) / countryRate),
       },
       quantity: 1,
     };
@@ -1067,21 +1108,23 @@ router.post(
       if (sessionDetails.payment_status === "unpaid") {
         return res.status(403).send("You have not paid yet");
       }
-      const cart: ICart | null = await Cart.findOne({ owner: req.user._id }).populate({
-      path: "products",
-      populate: [
-        {
-          path: "productId",
-          model: Product,
-          populate: [
-            {
-              path: "owner",
-              model: Store,
-            },
-          ],
-        },
-      ],
-    });
+      const cart: ICart | null = await Cart.findOne({
+        owner: req.user._id,
+      }).populate({
+        path: "products",
+        populate: [
+          {
+            path: "productId",
+            model: Product,
+            populate: [
+              {
+                path: "owner",
+                model: Store,
+              },
+            ],
+          },
+        ],
+      });
       const orderData = await addToOrders(
         cart,
         req.user.email,
@@ -1129,7 +1172,13 @@ router.get("/user", auth, async (req: Request, res: Response) => {
 });
 router.patch("/user/modify", auth, async (req: Request, res: Response) => {
   const updates: string[] = Object.keys(req.body);
-  const existingData: string[] = ["name", "phone", "password", "language", "currency"];
+  const existingData: string[] = [
+    "name",
+    "phone",
+    "password",
+    "language",
+    "currency",
+  ];
   const isAllowed: boolean = updates.every((update) =>
     existingData.includes(update)
   );
@@ -1157,18 +1206,20 @@ router.get("/user/wishlist", auth, async (req: Request, res: Response) => {
     }).populate({
       path: "productId",
       model: Product,
-      populate: [{
-        path: "owner",
-        model: Store,
-        populate: {
+      populate: [
+        {
           path: "owner",
-          model: Seller,
+          model: Store,
+          populate: {
+            path: "owner",
+            model: Seller,
+          },
         },
-      },
-      {
-        path: "ratingId",
-        model: Rating,
-      },]
+        {
+          path: "ratingId",
+          model: Rating,
+        },
+      ],
     });
     res.status(200).send(wishlists);
   } catch (e) {
@@ -1360,7 +1411,6 @@ router.post("/user/shopping", auth, async (req: Request, res: Response) => {
   const name = req.user.firstName + req.user.lastName;
   const { message } = req.body;
   try {
-
     const feedback = new Feedback({
       user: new ObjectId(req.user._id as unknown as mongoose.Types.ObjectId),
       message: message,
