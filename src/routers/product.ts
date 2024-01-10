@@ -9,8 +9,107 @@ import Seller from "../Models/Seller";
 import Review from "../Models/Review";
 import Ads, { Iads } from "../Models/Ads";
 import Rating from "../Models/Rating";
-
+import multer from "multer";
+import cloudinary from "cloudinary";
+import { v2 as cloudinaryV2 } from 'cloudinary';
+import Video from "../Models/Video";
 const router: Router = express.Router();
+
+// cloudinary.config({
+//   cloud_name: process.env.CLOUDNAME || 'your_cloud_name',
+//   api_key: process.env.CLOUDAPI || 'your_api_key',
+//   api_secret: process.env.CLOUDSECRET || 'your_api_secret',
+// });
+
+cloudinaryV2.config({
+  cloud_name: process.env.CLOUDNAME || 'your_cloud_name',
+  api_key: process.env.CLOUDAPI || 'your_api_key',
+  api_secret: process.env.CLOUDSECRET || 'your_api_secret',
+});
+
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, callback) => {
+    if (!file.mimetype.startsWith('video/')) {
+      return callback(new Error('Invalid file format. Only videos are allowed.'));
+    }
+    callback(null, true);
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB limit
+  },
+});
+
+router.post("/upload-video", upload.single('video'), async (req: Request, res: Response) => {
+  try {
+    console.log("here...............");
+    // Check if a file was provided
+    if (!req.file) {
+      console.log("not found............");
+      return res.status(400).json({ error: 'No video file provided' });
+      
+    }
+
+    // Validate optional field for video duration (less than 1 minute)
+    const videoDuration = req.body.duration || 0;
+    if (videoDuration > 60) {
+      return res.status(400).json({ error: 'Video duration must be less than 1 minute' });
+    }
+
+    // Upload video to Cloudinary
+    const result = await cloudinaryV2.uploader.upload_stream(
+      {
+        resource_type: 'video',
+        eager: [{ format: 'mp4' }],
+      },
+      async (error, result) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ error: 'Error uploading video to Cloudinary' });
+        }
+
+        // Cloudinary response contains the URL of the uploaded video
+        const videoUrl = result?.secure_url;
+
+        // Save the video URL to the database
+        const newVideo = new Video({ url: videoUrl });
+        await newVideo.save();
+
+        // Assume you have product data in the request body
+        const { productId, title, description, price, quantity, owner, category, subcategory , video} = req.body;
+
+        // Find the product by ID
+        const product = await Product.findById(productId);
+
+        if (!product) {
+          return res.status(404).json({ error: 'Product not found' });
+        }
+
+        // Update the product with video URL and other details
+        product.video = videoUrl;
+        product.title = title;
+        product.description = description;
+        product.price = price;
+        product.quantity = quantity;
+        product.owner = owner;
+        product.category = category;
+        product.subcategory = subcategory;
+
+        // Save the updated product
+        await product.save();
+
+        res.json({ videoUrl, productId });
+      }
+    ).end(req.file.buffer);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Error uploading video to Cloudinary' });
+  }
+});
+
+
 router.get("/product/:id", async (req: Request, res: Response) => {
   const id = req.params;
   try {
