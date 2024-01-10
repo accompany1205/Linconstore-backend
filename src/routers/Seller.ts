@@ -57,11 +57,13 @@ router.post("/seller", auth, async (req: Request, res: Response) => {
       ...req.body,
       owner,
     });
+    console.log({ seller });
     await seller.save();
     req.user.sellerId = seller._id;
     req.user.save();
     res.status(201).send(seller);
   } catch (e) {
+    console.log(e);
     res.status(403).send(e);
   }
 });
@@ -453,8 +455,9 @@ router.get("/seller/funds", sellerAuth, async (req: Request, res: Response) => {
     const seller: Iseller | null = await Seller.findOne({
       _id: req.seller._id,
     });
-    if (!seller || !seller?.storeId) res.status(403).send("There is no store for this seller");
-    
+    if (!seller || !seller?.storeId)
+      res.status(403).send("There is no store for this seller");
+
     const pending = await WalletEntry.find({ ownerId: seller?.storeId });
     let pendingSum: number = 0;
     let balance: number = 0;
@@ -466,41 +469,46 @@ router.get("/seller/funds", sellerAuth, async (req: Request, res: Response) => {
 
       if (pending[i].status == "PROCESSED") {
         balance = balance + pending[i]?.amountDue;
-       }
-     }
+      }
+    }
 
-     res.status(200).send({
-       pendingPayout: pendingSum ?? 0,
-       availablePayout: balance ?? 0,
-     });
-  } catch (error) {
-    res.status(400).send(error);
-  }
-});
-
-router.get("/seller/storeExpense", sellerAuth, async (req: Request, res: Response) => {
-  try {
-    const seller: Iseller | null = await Seller.findOne({
-      _id: req.seller._id,
+    res.status(200).send({
+      pendingPayout: pendingSum ?? 0,
+      availablePayout: balance ?? 0,
     });
-    if (!seller || !seller?.storeId) res.status(403).send("There is no store for this seller");
-    const wallet = await WalletEntry.find({ ownerId: seller?.storeId })
-      .sort({ updatedAt: "asc" })
-      .populate({
-        path: "orderId",
-        model: Order,
-        populate: [
-          {
-            path: "productId",
-            model: Product,
-          },
-        ],
-      })
-    res.status(200).send(wallet);
   } catch (error) {
     res.status(400).send(error);
   }
 });
+
+router.get(
+  "/seller/storeExpense",
+  sellerAuth,
+  async (req: Request, res: Response) => {
+    try {
+      const seller: Iseller | null = await Seller.findOne({
+        _id: req.seller._id,
+      });
+      if (!seller || !seller?.storeId)
+        res.status(403).send("There is no store for this seller");
+      const wallet = await WalletEntry.find({ ownerId: seller?.storeId })
+        .sort({ updatedAt: "asc" })
+        .populate({
+          path: "orderId",
+          model: Order,
+          populate: [
+            {
+              path: "productId",
+              model: Product,
+            },
+          ],
+        });
+      res.status(200).send(wallet);
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  }
+);
 
 router.get(
   "/seller/orders",
@@ -535,7 +543,7 @@ router.get(
       }
       const newOrders: IOrders[] = [];
       let orderLength: number = orders.length;
-      for (orderLength; orderLength--;) {
+      for (orderLength; orderLength--; ) {
         const addressId = orders[orderLength].address;
         const address: IAddress | null = await Address.findById(addressId);
         const newData: IOrders = {
@@ -559,11 +567,14 @@ router.post(
     const { order } = req.body;
     try {
       const invoiceData = { userId: req.seller._id, orderId: order._id };
-      const seller: Iseller | null = await Seller.findOne({ _id: req.seller._id });
+      const seller: Iseller | null = await Seller.findOne({
+        _id: req.seller._id,
+      });
       if (seller?.package === "Premium") {
         res.status(200).send({ downloadable: true });
       } else {
-        const invoiceCheck: IInvoiceDownload | null = await InvoiceDownload.findOne(invoiceData);
+        const invoiceCheck: IInvoiceDownload | null =
+          await InvoiceDownload.findOne(invoiceData);
         if (invoiceCheck) {
           res.status(200).send({ downloadable: true });
         } else {
@@ -611,7 +622,7 @@ router.get(
       }
       const newOrders: IOrders[] = [];
       let orderLength: number = orders.length;
-      for (orderLength; orderLength--;) {
+      for (orderLength; orderLength--; ) {
         const { userId } = orders[orderLength];
         const address: IAddress | null = await Address.findOne({ userId });
         const data: IOrders = {
@@ -650,7 +661,7 @@ router.get(
       }
       const newOrders: IOrders[] = [];
       let orderLength: number = orders.length;
-      for (orderLength; orderLength--;) {
+      for (orderLength; orderLength--; ) {
         const { userId } = orders[orderLength];
         const address: IAddress | null = await Address.findOne({ userId });
         const newData: IOrders = {
@@ -739,21 +750,23 @@ router.get(
       if (!store) return res.status(404).send([]);
       const refund: IRefund[] = await Refund.find({
         storeId: store!._id,
-      }).populate([{
-        model: Product,
-        path: "productId",
-        populate: {
-          path: "owner",
-          model: Store,
+      }).populate([
+        {
+          model: Product,
+          path: "productId",
           populate: {
             path: "owner",
-            model: Seller,
+            model: Store,
+            populate: {
+              path: "owner",
+              model: Seller,
+            },
           },
-        }
-      }, {
-        model: User,
-        path: "userId",
-      }
+        },
+        {
+          model: User,
+          path: "userId",
+        },
       ]);
       res.status(200).send(refund);
     } catch (e) {
@@ -788,7 +801,7 @@ router.get("/seller/me", sellerAuth, async (req: Request, res: Response) => {
     "canada",
     "mexico",
     "newZealand",
-    "unitedStates"
+    "unitedStates",
   ];
 
   const seller: Iseller = req.seller;
@@ -967,7 +980,8 @@ router.get(
   activeSeller,
   async (req: Request, res: Response) => {
     try {
-      const link: Stripe.Response<Stripe.LoginLink> = await stripe.accounts.createLoginLink(req.seller.accId as string);
+      const link: Stripe.Response<Stripe.LoginLink> =
+        await stripe.accounts.createLoginLink(req.seller.accId as string);
       res.status(200).send(link);
     } catch (e) {
       console.log(e);
@@ -980,7 +994,9 @@ router.get(
   sellerAuth,
   async (req: Request, res: Response) => {
     try {
-      const account = await stripe.accounts.retrieve(req.seller.accId as string);
+      const account = await stripe.accounts.retrieve(
+        req.seller.accId as string
+      );
       const requirements: any = account.requirements;
       const currentlyDue = requirements.currently_due;
       const errors = requirements.errors;
@@ -1036,17 +1052,17 @@ router.get(
     try {
       if (!req.seller.subId) return res.status(401).send();
       let country: string | undefined = "";
-       if(req.seller?.location === "unitedKingdom") {
-         country = "GB"
-       }
-       if(req.seller?.location === "unitedStates") {
-         country = "US"
-       }
-       const countryLocation = CountryCodes.find(
-         (x) => x.country.toLowerCase() === req.seller?.location.toLowerCase()
-       );
-       country = countryLocation?.code;  
-       const account = await stripe.accounts.create({
+      if (req.seller?.location === "unitedKingdom") {
+        country = "GB";
+      }
+      if (req.seller?.location === "unitedStates") {
+        country = "US";
+      }
+      const countryLocation = CountryCodes.find(
+        (x) => x.country.toLowerCase() === req.seller?.location.toLowerCase()
+      );
+      country = countryLocation?.code;
+      const account = await stripe.accounts.create({
         country: country,
         type: "express",
         capabilities: {
@@ -1238,7 +1254,7 @@ router.post(
     try {
       // const store = await Store.findOne({owner: req.seller._id});
       let idLength: number = newIds.length;
-      for (idLength; idLength--;) {
+      for (idLength; idLength--; ) {
         const id = newIds[idLength];
         const order: IOrder | null = await Order.findOne({ productId: id });
         if (order)
@@ -1282,14 +1298,15 @@ router.get("/seller/ads", sellerAuth, async (req: Request, res: Response) => {
     if (!store) {
       return res.status(404).send("Not found");
     }
-    const products = await Product.find({ owner: store!._id, quantity: { $gt: 0 } }).populate(
-      "ratingId"
-    );
+    const products = await Product.find({
+      owner: store!._id,
+      quantity: { $gt: 0 },
+    }).populate("ratingId");
     const ads = await Ads.find({ owner: store!._id }).populate({
       model: Product,
       path: "productId",
       match: {
-        quantity: { $gt: 0 }
+        quantity: { $gt: 0 },
       },
     });
     res.status(200).send({ products, ads });
@@ -1379,44 +1396,53 @@ router.get(
   }
 );
 
-router.post("/seller/template", activeSeller, async (req: Request, res: Response) => {
-  try {
-    const category = await Category.findOne({ title: req.body.category });
-    const template = new Template({
-      ...req.body,
-      category: category!._id,
-      owner: req.seller._id,
-    });
-    template.save();
-    res.status(200).send(template);
-  } catch (e) {
-    res.status(401).send(e);
+router.post(
+  "/seller/template",
+  activeSeller,
+  async (req: Request, res: Response) => {
+    try {
+      const category = await Category.findOne({ title: req.body.category });
+      const template = new Template({
+        ...req.body,
+        category: category!._id,
+        owner: req.seller._id,
+      });
+      template.save();
+      res.status(200).send(template);
+    } catch (e) {
+      res.status(401).send(e);
+    }
   }
-}
 );
 
-router.get("/seller/template", sellerAuth, async (req: Request, res: Response) => {
-  try {
-    const template = await Template.find({ active: true, owner: req.seller._id })
-      .populate({
+router.get(
+  "/seller/template",
+  sellerAuth,
+  async (req: Request, res: Response) => {
+    try {
+      const template = await Template.find({
+        active: true,
+        owner: req.seller._id,
+      }).populate({
         path: "category",
         model: Category,
       });
-    res.status(200).send(template);
-  } catch (e) {
-    res.status(400).send(e);
+      res.status(200).send(template);
+    } catch (e) {
+      res.status(400).send(e);
+    }
   }
-}
 );
 
 router.get("/seller/template/:id", async (req: Request, res: Response) => {
   const id = req.params;
   try {
-    const template = await Template.findById(new ObjectId(id as unknown as mongoose.Types.ObjectId))
-      .populate({
-        path: "category",
-        model: Category,
-      });
+    const template = await Template.findById(
+      new ObjectId(id as unknown as mongoose.Types.ObjectId)
+    ).populate({
+      path: "category",
+      model: Category,
+    });
     if (!template) {
       return res.status(404).send();
     }
@@ -1428,33 +1454,47 @@ router.get("/seller/template/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.patch("/seller/template/:id", sellerAuth, async (req: Request, res: Response) => {
-  const id = req.params;
-  let data = req.body;
-  try {
-    if (req.body.category) {
-      const category = await Category.findOne({ title: req.body.category });
-      data.category = category!._id
+router.patch(
+  "/seller/template/:id",
+  sellerAuth,
+  async (req: Request, res: Response) => {
+    const id = req.params;
+    let data = req.body;
+    try {
+      if (req.body.category) {
+        const category = await Category.findOne({ title: req.body.category });
+        data.category = category!._id;
+      }
+      const findExisting = await Template.findOne(
+        new ObjectId(id as unknown as mongoose.Types.ObjectId)
+      );
+      if (!findExisting) {
+        return res.status(403).send("No result found");
+      }
+      const template = await Template.findByIdAndUpdate(
+        new ObjectId(id as unknown as mongoose.Types.ObjectId),
+        data
+      );
+      res.status(200).send(template);
+    } catch (e) {
+      res.status(500).send(e);
     }
-    const findExisting = await Template.findOne(new ObjectId(id as unknown as mongoose.Types.ObjectId));
-    if (!findExisting) {
-      return res.status(403).send("No result found");
-    }
-    const template = await Template.findByIdAndUpdate(new ObjectId(id as unknown as mongoose.Types.ObjectId), data);
-    res.status(200).send(template);
-  } catch (e) {
-    res.status(500).send(e);
   }
-});
+);
 
-router.delete("/seller/template/:id", sellerAuth, async (req: Request, res: Response) => {
-  const id = req.params;
-  try {
-    const deletedTemplate = await Template.findByIdAndDelete(new ObjectId(id as unknown as mongoose.Types.ObjectId));
-    res.status(200).send(deletedTemplate);
-  } catch (e) {
-    res.status(500).send(e);
+router.delete(
+  "/seller/template/:id",
+  sellerAuth,
+  async (req: Request, res: Response) => {
+    const id = req.params;
+    try {
+      const deletedTemplate = await Template.findByIdAndDelete(
+        new ObjectId(id as unknown as mongoose.Types.ObjectId)
+      );
+      res.status(200).send(deletedTemplate);
+    } catch (e) {
+      res.status(500).send(e);
+    }
   }
-}
 );
 export default router;

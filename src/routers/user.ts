@@ -56,6 +56,7 @@ router.post("/user", async (req: Request, res: Response) => {
       email: req.body.email,
     });
     const customer_id = customer.id;
+    console.log("user register: ", { ...req.body });
     const user = new User({ ...req.body, otp, customer_id });
     await user.save();
     await verifyEmail(req.body.phone, req.body.email, otp);
@@ -168,8 +169,8 @@ router.post("/user/login", async (req: Request, res: Response) => {
         .send({ user, token, seller: seller ? seller.isVerified : null });
     }
     return res.status(400).send("Something went wrong");
-  } catch (e : any) {
-    if (e.message === "USER_PASSWORD_INCORRECT"){
+  } catch (e: any) {
+    if (e.message === "USER_PASSWORD_INCORRECT") {
       return res.status(403).send("USER_PASSWORD_INCORRECT");
     }
     if (e.message === "USER_NOT_EXIST")
@@ -629,6 +630,9 @@ type myData = {
   rating: number;
   productId: mongoose.Types.ObjectId;
 };
+type myLanguage = {
+  language: string;
+};
 type ratings = {
   userId: mongoose.Types.ObjectId;
   rating: number;
@@ -643,6 +647,70 @@ router.post("/user/rate", auth, async (req: Request, res: Response) => {
   const data: myData = {
     rating: req.body.rating,
     productId: req.body.productId,
+  };
+  const name = req.user.firstName;
+  const { comment, rating: rating1, productId } = req.body;
+  try {
+    const rating: IRating | null = await Rating.findOne({
+      productId: new ObjectId(data.productId),
+    });
+    if (rating) {
+      const existingUser = rating.ratings.find(
+        (data) => data.userId.toHexString() === req.user._id.toHexString()
+      );
+      if (existingUser) {
+        return res
+          .status(401)
+          .send({ status: "User cant rate the same item more than once" });
+      }
+      rating.ratings = rating.ratings.concat({
+        rating: data.rating,
+        name: req.user.email,
+        userId: req.user._id,
+        comment: req.body.comment,
+      });
+      const newRating: number = rating.ratings.reduce(
+        (acc, obj) => acc + obj.rating,
+        0
+      );
+      const length: number = rating.ratings.length;
+      rating.averageRating = Number((newRating / length).toFixed(1));
+      await rating.save();
+      return res.status(200).send(rating);
+    }
+    const newData: newData = {
+      productId: req.body.productId,
+      ratings: [
+        {
+          userId: req.user._id,
+          rating: req.body.rating,
+          name,
+        },
+      ],
+      averageRating: data.rating,
+    };
+    const newRating = new Rating(newData);
+    await newRating.save();
+    const product: IProduct | null = await Product.findById(req.body.productId);
+    product!.ratingId = newRating._id;
+    product!.save();
+    const review = new Review({
+      description: comment,
+      rate: rating1,
+      productId,
+      name,
+      owner: product?.owner,
+    });
+    await review.save();
+    res.status(201).send(newRating);
+  } catch (e) {
+    console.log(e);
+    res.status(401).send(e);
+  }
+});
+router.post("/user/language", auth, async (req: Request, res: Response) => {
+  const data: myLanguage = {
+    language: req.body.language,
   };
   const name = req.user.firstName;
   const { comment, rating: rating1, productId } = req.body;
