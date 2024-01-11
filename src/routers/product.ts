@@ -27,7 +27,6 @@ cloudinaryV2.config({
   api_secret: process.env.CLOUDSECRET || 'your_api_secret',
 });
 
-
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
@@ -42,14 +41,14 @@ const upload = multer({
   },
 });
 
-router.post("/upload-video", upload.single('video'), async (req: Request, res: Response) => {
+router.post("/upload-video", upload.array('videos', 5), async (req: Request, res: Response) => {
   try {
-    console.log("here...............");
-    // Check if a file was provided
-    if (!req.file) {
+    const files = (req as any).files as Express.Multer.File[]; // Type assertion
+
+    // Check if files were provided
+    if (!files || files.length === 0) {
       console.log("not found............");
-      return res.status(400).json({ error: 'No video file provided' });
-      
+      return res.status(400).json({ error: 'No video files provided' });
     }
 
     // Validate optional field for video duration (less than 1 minute)
@@ -58,57 +57,38 @@ router.post("/upload-video", upload.single('video'), async (req: Request, res: R
       return res.status(400).json({ error: 'Video duration must be less than 1 minute' });
     }
 
-    // Upload video to Cloudinary
-    const result = await cloudinaryV2.uploader.upload_stream(
-      {
-        resource_type: 'video',
-        eager: [{ format: 'mp4' }],
-      },
-      async (error, result) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ error: 'Error uploading video to Cloudinary' });
-        }
+    const uploadPromises = files.map((file: Express.Multer.File) => {
+      return new Promise<string>((resolve, reject) => {
+        cloudinaryV2.uploader.upload_stream(
+          {
+            resource_type: 'video',
+            eager: [{ format: 'mp4' }],
+          },
+          (error, result) => {
+            if (error) {
+              console.error(error);
+              reject('Error uploading video to Cloudinary');
+            }
 
-        // Cloudinary response contains the URL of the uploaded video
-        const videoUrl = result?.secure_url;
+            const videoUrl:any  = result?.secure_url;
+            const newVideo = new Video({ url: videoUrl });
+            newVideo.save()
+              .then(() => resolve(videoUrl))
+              .catch((saveError) => reject(saveError));
+          }
+        ).end(file.buffer);
+      });
+    });
 
-        // Save the video URL to the database
-        const newVideo = new Video({ url: videoUrl });
-        await newVideo.save();
+    // Wait for all uploads to complete before responding
+    const videoUrls = await Promise.all(uploadPromises);
 
-        // Assume you have product data in the request body
-        const { productId, title, description, price, quantity, owner, category, subcategory , video} = req.body;
-
-        // Find the product by ID
-        const product = await Product.findById(productId);
-
-        if (!product) {
-          return res.status(404).json({ error: 'Product not found' });
-        }
-
-        // Update the product with video URL and other details
-        product.video = videoUrl;
-        product.title = title;
-        product.description = description;
-        product.price = price;
-        product.quantity = quantity;
-        product.owner = owner;
-        product.category = category;
-        product.subcategory = subcategory;
-
-        // Save the updated product
-        await product.save();
-
-        res.json({ videoUrl, productId });
-      }
-    ).end(req.file.buffer);
+    res.json({ videoUrls });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'Error uploading video to Cloudinary' });
+    res.status(500).json({ error: 'Error uploading videos to Cloudinary' });
   }
 });
-
 
 router.get("/product/:id", async (req: Request, res: Response) => {
   const id = req.params;
