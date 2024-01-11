@@ -46,11 +46,6 @@ import { v2 as cloudinaryV2 } from 'cloudinary';
 import Video from "../Models/Video";
 
 const router: Router = express.Router();
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUDNAME,
-  api_key: process.env.CLOUDAPI,
-  api_secret: process.env.CLOUDSECRET,
-});
 
 cloudinaryV2.config({
   cloud_name: process.env.CLOUDNAME || 'your_cloud_name',
