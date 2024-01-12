@@ -28,7 +28,7 @@ type IContinent = {
 
 export interface IProduct extends mongoose.Document {
   owner: mongoose.Types.ObjectId;
-  video: string[];
+  videos: string[];
   photo: string[];
   title: string;
   condition: string;
@@ -72,10 +72,10 @@ const productSchema = new mongoose.Schema(
         required: true,
       },
     ],
-    video : [
+    videos : [
       {
         type: String,
-        required: false,
+        required: true,
       },
     ],
     title: {
