@@ -11,6 +11,15 @@ import Ads, { Iads } from "../Models/Ads";
 import Rating from "../Models/Rating";
 
 const router: Router = express.Router();
+
+// cloudinary.config({
+//   cloud_name: process.env.CLOUDNAME || 'your_cloud_name',
+//   api_key: process.env.CLOUDAPI || 'your_api_key',
+//   api_secret: process.env.CLOUDSECRET || 'your_api_secret',
+// });
+
+
+
 router.get("/product/:id", async (req: Request, res: Response) => {
   const id = req.params;
   try {

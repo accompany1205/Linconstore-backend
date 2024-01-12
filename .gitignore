@@ -46,6 +46,7 @@ build/
 dist/
 logs/
 *.log
+src/logs/
 
 # Ignore OS-specific files
 .DS_Store
