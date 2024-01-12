@@ -28,7 +28,7 @@ type IContinent = {
 
 export interface IProduct extends mongoose.Document {
   owner: mongoose.Types.ObjectId;
-  video: string;
+  video: string[];
   photo: string[];
   title: string;
   condition: string;
