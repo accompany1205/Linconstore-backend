@@ -10,7 +10,7 @@ config on the root directory. move dev.env to the config directory
 
 ## Documentation
 ```bash
-incoming 
+https://documenter.getpostman.com/view/13129148/2s93z6c3zW 
 ```
 ## Install dependencies
 
@@ -41,7 +41,7 @@ test accounts
 
 mongodb login
 linconstore@proton.me
-qazmlp123
+qazmlp123 
 
 cloudinary 
 linconstore@proton.me

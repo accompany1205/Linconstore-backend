@@ -49,9 +49,19 @@ const router = express.Router();
 //     role : string,
 // }
 
-router.post("/user", async (req: Request, res: Response) => {
+router.post("/user", async (req, res) => {
   const otp = generateOtp();
   try {
+    const existingUser = await User.findOne({
+      $or: [
+        { email: req.body.email },
+      ]
+    });
+
+    if (existingUser) {
+      return res.status(400).send({ error: "User already exists with this email" });
+    }
+
     const customer = await stripe.customers.create({
       email: req.body.email,
     });
@@ -62,9 +72,11 @@ router.post("/user", async (req: Request, res: Response) => {
     await verifyEmail(req.body.phone, req.body.email, otp);
     res.status(201).send({ user });
   } catch (e) {
-    res.status(400).send(e);
+    console.error(e);
+    res.status(500).send({ error: "Internal Server Error" });
   }
 });
+
 
 router.delete("/user/:id", auth, async (req: Request, res: Response) => {
   try {
@@ -421,7 +433,6 @@ router.post("/cart", auth, async (req: Request, res: Response) => {
     await newCart.save();
     res.status(201).send(newCart);
   } catch (e) {
-    console.log(e);
     res.status(500).send(e);
   }
 });
