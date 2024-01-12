@@ -56,7 +56,7 @@ const sellerSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "user",
       required: true,
-      unique: true,
+      // unique: true,
     },
     dob: {
       type: Date,
