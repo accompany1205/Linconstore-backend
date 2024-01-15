@@ -227,15 +227,17 @@ export const createCheckoutSession = async (
 export const createPaymentCheckout = async (
   customer: string,
   priceData: any,
-  language: string,
+  language: string
 ) => {
   try {
-
     const session = await stripe.checkout.sessions.create({
       customer,
       mode: "payment",
       line_items: priceData,
-      success_url: language === 'en' ? `${baseUrl}account/rate` : `${baseUrl}bg/account/rate`,
+      success_url:
+        language === "en"
+          ? `${baseUrl}account/rate`
+          : `${baseUrl}${language}/account/rate`,
       cancel_url: `${baseUrl}seller/payment/cancel`,
     });
     return session;
