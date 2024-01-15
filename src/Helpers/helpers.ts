@@ -94,7 +94,7 @@ export const updateOrders = async () => {
   let orders: IOrder[] = await Order.find({});
 
   let len: number = orders.length;
-  for (len; len--;) {
+  for (len; len--; ) {
     const date = getTimeDiff(orders[len].createdAt);
     if (orders[len].shipping == "Express") {
       if (date > 1) {
@@ -114,25 +114,29 @@ const orderUpdate = async (_id: any) => {
     order.active = true;
     await order.save();
   }
-}
+};
 
 export const updateShipping = async () => {
   logger.info("Updating shipping is called every 2mins");
   const orders: IOrder[] = await Order.find({ status: "processed" });
   let orderLength: number = orders.length;
-  for (orderLength; orderLength--;) {
+  for (orderLength; orderLength--; ) {
     const { updateShipping, shipping, updated } = orders[orderLength];
     const timeDiff = getTimeDiff(updateShipping);
     if (shipping === "Express" && updated && timeDiff > 1) {
       logger.info(`I tried updating this order ${shipping}`);
       orders[orderLength].status = "shipped";
       await orders[orderLength].save();
-      await WalletService.updateAvailablePayout({orderId: orders[orderLength]._id});
+      await WalletService.updateAvailablePayout({
+        orderId: orders[orderLength]._id,
+      });
     }
     if (shipping === "Standard" && updated && timeDiff > 2) {
       orders[orderLength].status = "shipped";
       await orders[orderLength].save();
-      await WalletService.updateAvailablePayout({orderId: orders[orderLength]._id});
+      await WalletService.updateAvailablePayout({
+        orderId: orders[orderLength]._id,
+      });
     }
   }
 };
@@ -141,7 +145,7 @@ export const updateHotdeals = async () => {
   try {
     let products = await Product.find({ hot: true });
     let productLength: number = products.length;
-    for (productLength; productLength--;) {
+    for (productLength; productLength--; ) {
       const { productUpdatedDate } = products[productLength];
       if (getTimeDiff(productUpdatedDate) > 720) {
         // Re-fetch the product from the database
@@ -167,7 +171,7 @@ export const updateHotdeals = async () => {
 export const updateActivity = async () => {
   const orders: IOrder[] = await Order.find({ status: "shipped" });
   let length: number = orders.length;
-  for (length; length--;) {
+  for (length; length--; ) {
     const date: number = getTimeDiff(orders[length].createdAt);
     const { productId, sellerId, shippingCost, amount } = orders[length];
     const store = await Store.findOne({ owner: sellerId });
@@ -222,14 +226,16 @@ export const createCheckoutSession = async (
 };
 export const createPaymentCheckout = async (
   customer: string,
-  priceData: any
+  priceData: any,
+  language: string,
 ) => {
   try {
+
     const session = await stripe.checkout.sessions.create({
       customer,
       mode: "payment",
       line_items: priceData,
-      success_url: `${baseUrl}account/rate`,
+      success_url: language === 'en' ? `${baseUrl}account/rate` : `${baseUrl}bg/account/rate`,
       cancel_url: `${baseUrl}seller/payment/cancel`,
     });
     return session;
@@ -273,24 +279,32 @@ const orderPlacedNotification = async (
   products: any,
   address: string,
   user: any,
-  shipping: string,
+  shipping: string
 ) => {
-  const symbol = (exchangeCurrency.find(c => c.label === user.currency))?.symbol ?? "$";
-  const userRate = await calculateRate(user.currency?.toLowerCase() ?? "usd")
+  const symbol =
+    exchangeCurrency.find((c) => c.label === user.currency)?.symbol ?? "$";
+  const userRate = await calculateRate(user.currency?.toLowerCase() ?? "usd");
   let productLength = products.length;
   let totalAmount = 0;
-  let message = ""
-  let shippingPrice = 0
-  for (productLength; productLength--;) {
+  let message = "";
+  let shippingPrice = 0;
+  for (productLength; productLength--; ) {
     const x = products[productLength];
-    const productRate = await calculateRate((x.productId.owner.currency)?.toLowerCase() ?? "usd")
+    const productRate = await calculateRate(
+      x.productId.owner.currency?.toLowerCase() ?? "usd"
+    );
     const { shipping: existingShipping } = x.productId;
-    const shippingNewPrice: number = shipping === "Standard" ? existingShipping[0].standard.price : existingShipping[0].express.price;
-    shippingPrice += productRate * shippingNewPrice / userRate;
-    totalAmount += productRate * (x.price + shippingNewPrice) / userRate;
+    const shippingNewPrice: number =
+      shipping === "Standard"
+        ? existingShipping[0].standard.price
+        : existingShipping[0].express.price;
+    shippingPrice += (productRate * shippingNewPrice) / userRate;
+    totalAmount += (productRate * (x.price + shippingNewPrice)) / userRate;
     const photo = x.photo;
-    const orderDatas: IOrder[] = await Order.find({productId: x.productId._id});
-    const orderId = orderDatas[0]._id;    
+    const orderDatas: IOrder[] = await Order.find({
+      productId: x.productId._id,
+    });
+    const orderId = orderDatas[0]._id;
     message += `
             <tr>
                 <td align="center" width="30%">
@@ -300,18 +314,24 @@ const orderPlacedNotification = async (
             <sub style="font-size: 10px; text-align: left;"> Order ID: ${orderId}</sub>
             <p style="font-size: 14px; margin: 0;">${x.name}</p>
             
-            ${x.variants.length > 0 ?
-        x.variants.map((y: any) => {
-          return `<span style="font-size: 12px; margin: 0;">${y.variant} - ${y.option}</span>`;
-        }).join("/")
-        : ""
-      }
+            ${
+              x.variants.length > 0
+                ? x.variants
+                    .map((y: any) => {
+                      return `<span style="font-size: 12px; margin: 0;">${y.variant} - ${y.option}</span>`;
+                    })
+                    .join("/")
+                : ""
+            }
             <p style="font-size: 12px; margin: 0;">Unit - ${x.quantity}</p>
-                <p style="font-size: 12px; margin: 0;">${symbol} ${(x.price * productRate / userRate).toFixed(2)}</p>
+                <p style="font-size: 12px; margin: 0;">${symbol} ${(
+      (x.price * productRate) /
+      userRate
+    ).toFixed(2)}</p>
             </td>   
             </tr>
             `;
-  };
+  }
 
   const addr = await Address.findById(address);
   await OrderPlacedNotification(
@@ -385,7 +405,7 @@ export const sendOrderDeliveryNotification = async () => {
     const orders: IOrder[] = await Order.find({ status: "shipped" });
     let orderLength = orders.length;
 
-    for (orderLength; orderLength--;) {
+    for (orderLength; orderLength--; ) {
       const {
         shippingProvider,
         shippingCost,
@@ -396,7 +416,7 @@ export const sendOrderDeliveryNotification = async () => {
         variants,
         address,
         createdAt,
-        quantity
+        quantity,
       } = orders[orderLength];
       const product = await Product.findById(productId).populate({
         path: "owner",
@@ -434,7 +454,7 @@ export const disableUnsoldProductsForFreePlanSellers = async () => {
 
     let length: number = sellers.length;
 
-    for (length; length--;) {
+    for (length; length--; ) {
       const { _id } = sellers[length];
       const store: IStore | null = await Store.findOne({ owner: _id });
       if (!store) continue;
@@ -444,7 +464,7 @@ export const disableUnsoldProductsForFreePlanSellers = async () => {
           owner: store._id,
         });
         let productLength: number = products.length;
-        for (productLength; productLength--;) {
+        for (productLength; productLength--; ) {
           const { createdAt } = products[productLength];
           if (createdAt > productCreatedAt) {
             products[productLength].active = false;
@@ -453,7 +473,7 @@ export const disableUnsoldProductsForFreePlanSellers = async () => {
         }
       }
     }
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const addToOrders = async (
@@ -470,15 +490,16 @@ export const addToOrders = async (
   let productsLength = products.length;
   const shippingPrice: number[] = [];
   try {
-    for (productsLength; productsLength--;) {
-      const product = products[productsLength].productId
+    for (productsLength; productsLength--; ) {
+      const product = products[productsLength].productId;
       if (!product) {
         throw new Error("Product not found");
       }
-      const { productId, name, quantity, price, variants } = products[productsLength];
+      const { productId, name, quantity, price, variants } =
+        products[productsLength];
       let variantLength = variants.length;
       if (variantLength > 0) {
-        for (variantLength; variantLength--;) {
+        for (variantLength; variantLength--; ) {
           const { variant, option } = variants[variantLength];
           //@ts-ignore
           const updateProduct: any | null = product?.variants.find(
@@ -550,13 +571,7 @@ export const addToOrders = async (
         order._id
       );
     }
-    await orderPlacedNotification(
-      email,
-      products,
-      address,
-      user,
-      shipping,
-    );
+    await orderPlacedNotification(email, products, address, user, shipping);
     for (let i = 0; i < sellerIds.length; i++) {
       let info = sellerIds[i];
       const newNotification = new Notification({
@@ -670,22 +685,22 @@ export const getUserByCountry = async (): Promise<Iuser[]> => {
     {
       $match: {
         country: { $ne: null },
-        sellerId: { $exists: false }
-      }
+        sellerId: { $exists: false },
+      },
     },
     {
       $group: {
         _id: "$country",
-        userCount: { $sum: 1 }
-      }
+        userCount: { $sum: 1 },
+      },
     },
     {
-      $sort: { userCount: -1 }
+      $sort: { userCount: -1 },
     },
     {
-      $limit: 7
-    }
-  ]);;
+      $limit: 7,
+    },
+  ]);
   return users;
 };
 export const getSellerByCountry = async (): Promise<Iuser[]> => {
@@ -693,22 +708,22 @@ export const getSellerByCountry = async (): Promise<Iuser[]> => {
     {
       $match: {
         country: { $ne: null },
-        sellerId: { $exists: true }
-      }
+        sellerId: { $exists: true },
+      },
     },
     {
       $group: {
         _id: "$country",
-        userCount: { $sum: 1 }
-      }
+        userCount: { $sum: 1 },
+      },
     },
     {
-      $sort: { userCount: -1 }
+      $sort: { userCount: -1 },
     },
     {
-      $limit: 7
-    }
-  ]);;
+      $limit: 7,
+    },
+  ]);
   return users;
 };
 export const getRefundRange = async (
@@ -771,7 +786,7 @@ const handleSortRep = async (
 const deleteCartProduct = async (productId: mongoose.Types.ObjectId) => {
   const cart: ICart[] = await Cart.find({ "products.productId": productId });
   let cartLength: number = cart.length;
-  for (cartLength; cartLength--;) {
+  for (cartLength; cartLength--; ) {
     const productIndex: number = cart[cartLength].products.findIndex(
       (product) => product.productId === productId
     );
@@ -797,7 +812,7 @@ const deleteWish = async (productId: mongoose.Types.ObjectId) => {
 export const updateCart = async () => {
   const products: IProduct[] = await Product.find({ quantity: 0 });
   let productLength: number = products.length;
-  for (productLength; productLength--;) {
+  for (productLength; productLength--; ) {
     await deleteCartProduct(products[productLength]._id);
     await deleteWish(products[productLength]._id);
   }
@@ -806,7 +821,7 @@ export const updateCart = async () => {
 export const handleSetSellerRep = async () => {
   const orders: IOrder[] = await Order.find({});
   let length: number = orders.length;
-  for (length; length--;) {
+  for (length; length--; ) {
     await handleSortRep(orders[length].sellerId);
   }
 };
@@ -887,7 +902,7 @@ export const createPortal = async (
 export const updateStoreActivity = async () => {
   let stores = await Store.find({});
   let storeLength: number = stores.length;
-  for (storeLength; storeLength--;) {
+  for (storeLength; storeLength--; ) {
     const lastUpdated = getTimeDiff(stores[storeLength].updatedAt);
     if (lastUpdated > 6) {
       // Re-fetch the store from the database
@@ -906,7 +921,7 @@ export const updateStoreActivity = async () => {
 export const deleteInvalidStores = async () => {
   const stores: IStore[] = await Store.find({});
   let storeLength: number = stores.length;
-  for (storeLength; storeLength--;) {
+  for (storeLength; storeLength--; ) {
     const { owner } = stores[storeLength];
     const seller: Iseller | null = await Seller.findById(owner);
     if (!seller) {
@@ -918,7 +933,7 @@ export const deleteInvalidStores = async () => {
 export const deleteInvalidProductsRating = async () => {
   const ratings: IRating[] = await Rating.find({});
   let length: number = ratings.length;
-  for (length; length--;) {
+  for (length; length--; ) {
     const { productId } = ratings[length];
     const product = await Product.findById(productId);
     if (product) continue;
@@ -933,7 +948,7 @@ export const deleteInvalidProductsRating = async () => {
 export const deleteInvalidProductsReviews = async () => {
   const reviews: IReview[] = await Review.find({});
   let length: number = reviews.length;
-  for (length; length--;) {
+  for (length; length--; ) {
     const { productId } = reviews[length];
     const product = await Product.findById(productId);
     if (product) continue;
@@ -945,7 +960,7 @@ export const deleteInvalidProductsReviews = async () => {
 export const deleteInvalidProductOrders = async () => {
   const orders: IOrder[] = await Order.find({});
   let length: number = orders.length;
-  for (length; length--;) {
+  for (length; length--; ) {
     const { productId } = orders[length];
     const product = await Product.findById(productId);
     if (product) continue;
@@ -957,7 +972,7 @@ export const deleteInvalidProductOrders = async () => {
 export const deleteInvalidProductActivity = async () => {
   const activities: IActivity[] = await Activity.find({});
   let length: number = activities.length;
-  for (length; length--;) {
+  for (length; length--; ) {
     const { productId } = activities[length];
     const product = await Product.findById(productId);
     if (product) continue;
@@ -967,7 +982,7 @@ export const deleteInvalidProductActivity = async () => {
 export const deleteInvalidProductRefund = async () => {
   const refunds: IRefund[] = await Refund.find({});
   let length: number = refunds.length;
-  for (length; length--;) {
+  for (length; length--; ) {
     const { productId } = refunds[length];
     const product = await Product.findById(productId);
     if (product) continue;
@@ -1027,11 +1042,11 @@ export const deactivateSellerProducts = async (store: IStore) => {
 
     let productLength = products.length;
 
-    for (productLength; productLength--;) {
+    for (productLength; productLength--; ) {
       products[productLength].active = !products[productLength].active;
       await products[productLength].save();
     }
-  } catch (error) { }
+  } catch (error) {}
 };
 
 export const updateProductStatus = async () => {

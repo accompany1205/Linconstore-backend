@@ -122,7 +122,7 @@ router.post("/seller", auth, async (req: Request, res: Response) => {
       ...req.body,
       owner,
     });
-    console.log({ seller });
+
     await seller.save();
     req.user.sellerId = seller._id;
     req.user.save();

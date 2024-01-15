@@ -53,20 +53,19 @@ router.post("/user", async (req, res) => {
   const otp = generateOtp();
   try {
     const existingUser = await User.findOne({
-      $or: [
-        { email: req.body.email },
-      ]
+      $or: [{ email: req.body.email }],
     });
 
     if (existingUser) {
-      return res.status(400).send({ error: "User already exists with this email" });
+      return res
+        .status(400)
+        .send({ error: "User already exists with this email" });
     }
 
     const customer = await stripe.customers.create({
       email: req.body.email,
     });
     const customer_id = customer.id;
-    console.log("user register: ", { ...req.body });
     const user = new User({ ...req.body, otp, customer_id });
     await user.save();
     await verifyEmail(req.body.phone, req.body.email, otp);
@@ -76,7 +75,6 @@ router.post("/user", async (req, res) => {
     res.status(500).send({ error: "Internal Server Error" });
   }
 });
-
 
 router.delete("/user/:id", auth, async (req: Request, res: Response) => {
   try {
@@ -641,9 +639,6 @@ type myData = {
   rating: number;
   productId: mongoose.Types.ObjectId;
 };
-type myLanguage = {
-  language: string;
-};
 type ratings = {
   userId: mongoose.Types.ObjectId;
   rating: number;
@@ -719,79 +714,7 @@ router.post("/user/rate", auth, async (req: Request, res: Response) => {
     res.status(401).send(e);
   }
 });
-// router.post("/user/language", auth, async (req: Request, res: Response) => {
-//   const data: myLanguage = {
-//     language: req.body.language,
-//   };
-//   const name = req.user.firstName;
-//   const { comment, rating: rating1, productId } = req.body;
-//   try {
-//     const rating: IRating | null = await Rating.findOne({
-//       productId: new ObjectId(data.productId),
-//     });
-//     if (rating) {
-//       const existingUser = rating.ratings.find(
-//         (data) => data.userId.toHexString() === req.user._id.toHexString()
-//       );
-//       if (existingUser) {
-//         return res
-//           .status(401)
-//           .send({ status: "User cant rate the same item more than once" });
-//       }
-//       rating.ratings = rating.ratings.concat({
-//         rating: data.rating,
-//         name: req.user.email,
-//         userId: req.user._id,
-//         comment: req.body.comment,
-//       });
-//       const newRating: number = rating.ratings.reduce(
-//         (acc, obj) => acc + obj.rating,
-//         0
-//       );
-//       const length: number = rating.ratings.length;
-//       rating.averageRating = Number((newRating / length).toFixed(1));
-//       await rating.save();
-//       return res.status(200).send(rating);
-//     }
-//     const newData: newData = {
-//       productId: req.body.productId,
-//       ratings: [
-//         {
-//           userId: req.user._id,
-//           rating: req.body.rating,
-//           name,
-//         },
-//       ],
-//       averageRating: data.rating,
-//     };
-//     const newRating = new Rating(newData);
-//     await newRating.save();
-//     const product: IProduct | null = await Product.findById(req.body.productId);
-//     product!.ratingId = newRating._id;
-//     product!.save();
-//     const review = new Review({
-//       description: comment,
-//       rate: rating1,
-//       productId,
-//       name,
-//       owner: product?.owner,
-//     });
-//     await review.save();
-//     res.status(201).send(newRating);
-//   } catch (e) {
-//     console.log(e);
-//     res.status(401).send(e);
-//   }
-// });
-// router.get('/user/rate', auth, async (req : Request, res : Response) => {
-//     try {
-//         const rating : IRating [] = await Rating.findOne({});
-//         res.status(200).send(rating)
-//     }
-//     catch (e) {
-//         res.status(500).send(e)
-//     }
-// })
+
 router.get("/store/view/:id", async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
@@ -1091,6 +1014,8 @@ router.post("/user/payment", auth, async (req: Request, res: Response) => {
   const shippingType: string = req.body.type;
   const countryRate: number = req.body.countryRate;
   const currencyLabel: string = req.body.currencyLabel;
+  const language: string = req.body.language;
+
   try {
     const cart: ICart | null = await Cart.findOne({
       owner: req.user._id,
@@ -1150,7 +1075,11 @@ router.post("/user/payment", auth, async (req: Request, res: Response) => {
       quantity: 1,
     };
     productsArray.push(shippingTotal);
-    const session = await createPaymentCheckout(customer, productsArray);
+    const session = await createPaymentCheckout(
+      customer,
+      productsArray,
+      language
+    );
     req.user.payId = session?.id as string;
     req.user.shipping = shippingType;
     await req.user.save();
